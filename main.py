@@ -4,6 +4,8 @@
 # author: Jinli Xiao
 
 import os
+import re
+import numpy as np
 
 # parse data
 
@@ -39,8 +41,9 @@ os.system("shuf output/abalone.scale.txt > output/abalone.scale.shuffle.txt")
 os.system("split -n l/5 -d --additional-suffix=.txt output/abalone.scale.shuffle.txt output/abalone.scale.shuffle.split")
 
 
+
 k = 0
-for d in range(1, 5):
+for d in range(1, 6):
     for i in range(-k, k+1):
         for s in range(5):
             c = 3 ** i
@@ -52,5 +55,11 @@ for d in range(1, 5):
             pred_log = "output/abalone.prediction.log.%d.%d.%d.txt" % (d, i, s)
             os.system("./libsvm-3.25/svm-train -t 1 -d %d -c %f %s %s > %s" % (d, c, train_set, model_file, train_log))
             os.system("./libsvm-3.25/svm-predict %s %s %s > %s" % (test_file, model_file, prediction, pred_log))
+    
+            with open(pred_log, "r") as f:
+                for line in f:
+                    res = re.findall(r"^Accuracy = ([\d\.]+)%", line)
+                    if res:
+                        print(1-float(res[0])/100)
 
             
